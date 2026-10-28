@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GreenBite | تطبيق الطلب السريع</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Tajawal:wght@500;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-green: #34a853;
+      --accent-green: #2ecc71;
+      --light-green: #e8f5e9;
+      --card-green: #48bb78;
+      --bg-app: #f7f9fa;
+      --white: #ffffff;
+      --dark-text: #1a202c;
+      --muted: #718096;
+      --orange: #ff7043;
+      --border: #edf2f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: #0d1117;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* إطار شاشة الهاتف */
+    .mobile-frame {
+      width: 100%;
+      max-width: 420px;
+      height: 100vh;
+      max-height: 880px;
+      background-color: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+    }
+
+    @media (min-width: 480px) {
+      .mobile-frame {
+        border-radius: 40px;
+        height: 92vh;
+        border: 8px solid #1f2937;
+      }
+    }
+
+    /* منطقة محتوى الصفحات */
+    .pages-viewport {
+      flex: 1;
+      overflow-y: auto;
+      padding-bottom: 90px;
+      scroll-behavior: smooth;
+    }
+
+    .pages-viewport::-webkit-scrollbar {
+      display: none;
+    }
+
+    .app-page {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+
+    .app-page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 1. الترويسة العلوية للمستخدم والموقع */
+    .app-topbar {
+      padding: 16px 20px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-app);
+    }
+
+    .user-location-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80') center/cover;
+      border: 2px solid var(--white);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .location-info span {
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .location-info h4 {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--dark-text);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .notification-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .notif-dot {
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    /* 2. بنر التوصيل السريع المنحني */
+    .banner-container {
+      padding: 0 20px;
+      margin-top: 6px;
+    }
+
+    .delivery-hero-card {
+      background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%);
+      border-radius: 28px;
+      padding: 20px 22px;
+      color: var(--white);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 20px rgba(72, 187, 120, 0.3);
+    }
+
+    .banner-texts {
+      z-index: 2;
+      max-width: 60%;
+    }
+
+    .banner-texts h2 {
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1.2;
+      letter-spacing: -0.3px;
+    }
+
+    .banner-texts p {
+      font-size: 0.78rem;
+      opacity: 0.9;
+      margin: 4px 0 12px;
+    }
+
+    .banner-cta {
+      background: var(--orange);
+      color: var(--white);
+      border: none;
+      padding: 7px 18px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(255, 112, 67, 0.35);
+    }
+
+    .banner-illustration {
+      font-size: 4.8rem;
+      z-index: 2;
+      transform: scaleX(-1);
+      filter: drop-shadow(0 8px 12px rgba(0,0,0,0.15));
+    }
+
+    .banner-circle-bg {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 50%;
+      top: -40px;
+      left: -30px;
+    }
+
+    /* 3. شريط التصنيفات الدائرية */
+    .section-header {
+      padding: 20px 20px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-header h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--dark-text);
+    }
+
+    .see-all-link {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary-green);
+      cursor: pointer;
+    }
+
+    .categories-row {
+      display: flex;
+      gap: 12px;
+      padding: 0 20px;
+      overflow-x: auto;
+    }
+
+    .categories-row::-webkit-scrollbar { display: none; }
+
+    .category-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .cat-icon-bubble {
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+      transition: all 0.2s;
+    }
+
+    .category-item.active .cat-icon-bubble {
+      background: var(--primary-green);
+      box-shadow: 0 8px 18px rgba(52, 168, 83, 0.35);
+      border-color: var(--primary-green);
+      transform: translateY(-2px);
+    }
+
+    .cat-name {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .category-item.active .cat-name {
+      color: var(--primary-green);
+      font-weight: 800;
+    }
+
+    /* 4. كروت عروض الخصم الترويجية */
+    .deals-row {
+      display: flex;
+      gap: 14px;
+      padding: 0 20px;
+      overflow-x: auto;
+    }
+
+    .deals-row::-webkit-scrollbar { display: none; }
+
+    .deal-card {
+      min-width: 240px;
+      height: 120px;
+      border-radius: 22px;
+      background: #1e293b;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .deal-card-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.45;
+    }
+
+    .deal-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .deal-badge {
+      background: var(--orange);
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .deal-title {
+      font-size: 1.1rem;
+      font-weight: 900;
+    }
+
+    /* 5. شبكة المنتجات والوجبات */
+    .food-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 0 20px;
+      margin-top: 4px;
+    }
+
+    .food-card-modern {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      transition: transform 0.15s;
+    }
+
+    .food-thumb {
+      width: 75px;
+      height: 75px;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    .food-details {
+      flex: 1;
+    }
+
+    .food-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--dark-text);
+    }
+
+    .food-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .food-price {
+      font-family: 'Plus Jakarta Sans', 'Tajawal', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--primary-green);
+      margin-top: 6px;
+    }
+
+    .add-to-cart-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--light-green);
+      color: var(--primary-green);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .add-to-cart-btn:active {
+      background: var(--primary-green);
+      color: var(--white);
+      transform: scale(0.9);
+    }
+
+    /* 6. صفحة السلة والدفع */
+    .cart-page-content {
+      padding: 20px;
+    }
+
+    .cart-empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .cart-item-row {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .qty-counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .counter-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-app);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .order-input-group {
+      margin-top: 20px;
+      background: var(--white);
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .order-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .order-input:focus {
+      border-color: var(--primary-green);
+    }
+
+    .whatsapp-submit-btn {
+      width: 100%;
+      background: #25D366;
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35);
+      margin-top: 15px;
+    }
+
+    /* 7. شريط التنقل السفلي الثابت (Floating App Bottom Bar) */
+    .app-bottom-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 75px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+    }
+
+    .nav-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #94a3b8;
+      cursor: pointer;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .nav-tab.active {
+      color: var(--primary-green);
+    }
+
+    .nav-icon {
+      font-size: 1.35rem;
+    }
+
+    .nav-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .badge-cart {
+      position: absolute;
+      top: -4px;
+      left: 10px;
+      background: var(--orange);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- حاوية الهاتف المحمول -->
+  <div class="mobile-frame">
+
+    <!-- شريط الترويسة العلوي المشترك -->
+    <div class="app-topbar">
+      <div class="user-location-group">
+        <div class="user-avatar"></div>
+        <div class="location-info">
+          <span>التوصيل إلى 📍</span>
+          <h4>حي المزرعة، دمشق ▾</h4>
+        </div>
+      </div>
+      <div class="notification-btn" onclick="switchPage('offers', document.getElementById('tabOffers'))">
+        🔔
+        <div class="notif-dot"></div>
+      </div>
+    </div>
+
+    <!-- نافذة الصفحات التفاعلية -->
+    <div class="pages-viewport">
+
+      <!-- الصفحة 1: الرئيسية (Home) -->
+      <section id="pageHome" class="app-page active">
+        
+        <!-- بنر التوصيل السريع المميز -->
+        <div class="banner-container">
+          <div class="delivery-hero-card">
+            <div class="banner-circle-bg"></div>
+            <div class="banner-texts">
+              <h2>توصيل فوري<br>& مجاني!</h2>
+              <p>على جميع وجبات نهاية الأسبوع</p>
+              <button class="banner-cta" onclick="filterCategory('burgers')">اطلب الآن</button>
+            </div>
+            <div class="banner-illustration">🛵</div>
+          </div>
+        </div>
+
+        <!-- التصنيفات الأفقية -->
+        <div class="section-header">
+          <h3>الأقسام والتصنيفات</h3>
+          <span class="see-all-link" onclick="filterCategory('all')">عرض الكل</span>
+        </div>
+
+        <div class="categories-row">
+          <div class="category-item active" onclick="filterCategory('all', this)">
+            <div class="cat-icon-bubble">🍔</div>
+            <span class="cat-name">الكل</span>
+          </div>
+          <div class="category-item" onclick="filterCategory('shawarma', this)">
+            <div class="cat-icon-bubble">🌯</div>
+            <span class="cat-name">شاورما</span>
+          </div>
+          <div class="category-item" onclick="filterCategory('burgers', this)">
+            <div class="cat-icon-bubble">🍔</div>
+            <span class="cat-name">برغر</span>
+          </div>
+          <div class="category-item" onclick="filterCategory('pizza', this)">
+            <div class="cat-icon-bubble">🍕</div>
+            <span class="cat-name">بيتزا</span>
+          </div>
+          <div class="category-item" onclick="filterCategory('chicken', this)">
+            <div class="cat-icon-bubble">🍗</div>
+            <span class="cat-name">بروستد</span>
+          </div>
+        </div>
+
+        <!-- كروت العروض الترويجية الحصرية -->
+        <div class="section-header">
+          <h3>عروض التوفير الحصرية</h3>
+          <span class="see-all-link" onclick="switchPage('offers', document.getElementById('tabOffers'))">كافة العروض</span>
+        </div>
+
+        <div class="deals-row">
+          <div class="deal-card">
+            <div class="deal-card-bg" style="background-image: url('https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=500&q=80');"></div>
+            <div class="deal-content">
+              <span class="deal-badge">خصم 30%</span>
+              <div class="deal-title">بيتزا بيبروني عائلية</div>
+              <p style="font-size: 0.72rem; opacity: 0.9;">مع لتر كولا مجاناً</p>
+            </div>
+          </div>
+
+          <div class="deal-card" style="background: #14532d;">
+            <div class="deal-card-bg" style="background-image: url('https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=500&q=80');"></div>
+            <div class="deal-content">
+              <span class="deal-badge" style="background: var(--primary-green);">توصيل مجاني</span>
+              <div class="deal-title">كومبو برغر دبل تشيز</div>
+              <p style="font-size: 0.72rem; opacity: 0.9;">بطاطا + صوص شيدر</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- قائمة الوجبات الشائعة -->
+        <div class="section-header">
+          <h3>الوجبات الأكثر طلباً اليوم</h3>
+        </div>
+
+        <div class="food-grid" id="foodGrid">
+          <!-- يتم إدراج الوجبات ديناميكياً عبر الجافاسكربت -->
+        </div>
+
+      </section>
+
+      <!-- الصفحة 2: العروض (Offers) -->
+      <section id="pageOffers" class="app-page">
+        <div style="padding: 20px;">
+          <h2 style="font-size: 1.3rem; font-weight: 900; margin-bottom: 6px;">كوبونات وعروض اليوم 🎟️</h2>
+          <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">خصومات حصرية على طلبات الديليفري المباشرة</p>
+
+          <div class="deal-card" style="margin-bottom: 12px; height: 130px;">
+            <div class="deal-card-bg" style="background-image: url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=80');"></div>
+            <div class="deal-content">
+              <span class="deal-badge">كود: FOODIE30</span>
+              <div class="deal-title">حسم 30,000 ل.س على الفاتورة</div>
+              <p style="font-size: 0.75rem;">عند الطلب بقيمة تتجاوز 150 ألف ليرة</p>
+            </div>
+          </div>
+
+          <div class="deal-card" style="margin-bottom: 12px; height: 130px; background: #831843;">
+            <div class="deal-card-bg" style="background-image: url('https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=500&q=80');"></div>
+            <div class="deal-content">
+              <span class="deal-badge" style="background: #db2777;">عرض الوجبة المزدوجة</span>
+              <div class="deal-title">2 وجبة شاورما عربي دبل</div>
+              <p style="font-size: 0.75rem;">بسعر 65,000 ل.س بدلاً من 76,000</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- الصفحة 3: السلة وتأكيد الطلب (Cart) -->
+      <section id="pageCart" class="app-page">
+        <div class="cart-page-content">
+          <h2 style="font-size: 1.3rem; font-weight: 900; margin-bottom: 14px;">سلة الطلبات 🛒</h2>
+          
+          <div id="cartItemsContainer">
+            <div class="cart-empty-state">
+              <div style="font-size: 3rem; margin-bottom: 10px;">🛍️</div>
+              <h3>سلتك فارغة حالياً</h3>
+              <p style="font-size: 0.8rem; margin-top: 4px;">تصفح الوجبات الشهية وأضف ما يعجبك بلمسة واحدة</p>
+            </div>
+          </div>
+
+          <div id="checkoutSection" style="display: none;">
+            <div class="order-input-group">
+              <h4 style="font-size: 0.9rem; font-weight: 800; margin-bottom: 10px;">بيانات المستلم والتوصيل:</h4>
+              <input type="text" id="custNameInput" class="order-input" placeholder="الاسم الكريم (مثال: أ. وسام)">
+              <input type="text" id="custAddressInput" class="order-input" placeholder="العنوان بالتفصيل (المنطقة، الشارع، البناء)">
+              <input type="text" id="custNoteInput" class="order-input" placeholder="ملاحظات المطبخ (زيادة صوص، بدون بصل...)">
+              
+              <div style="display: flex; justify-content: space-between; margin-top: 10px; font-weight: 800; font-size: 1.05rem;">
+                <span>المجموع النهائي:</span>
+                <span id="cartTotalPrice" style="color: var(--primary-green);">0 ل.س</span>
+              </div>
+
+              <button class="whatsapp-submit-btn" onclick="checkoutToWhatsApp()">
+                <span>💬 إرسال الطلب وحجز الفاتورة عبر WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- الصفحة 4: الملف الشخصي (Profile) -->
+      <section id="pageProfile" class="app-page">
+        <div style="padding: 24px 20px; text-align: center;">
+          <div class="user-avatar" style="width: 80px; height: 80px; margin: 0 auto 12px;"></div>
+          <h2 style="font-size: 1.2rem; font-weight: 900;">أ. وسام الدنحة</h2>
+          <p style="font-size: 0.8rem; color: var(--muted);">عميل VIP مميز ⭐</p>
+
+          <div style="margin-top: 24px; text-align: right; display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: var(--white); padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; justify-content: space-between;">
+              <span>📍 العناوين المحفوظة</span>
+              <span style="color: var(--primary-green); font-weight: 700;">دمشق - المزرعة</span>
+            </div>
+            <div style="background: var(--white); padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; justify-content: space-between;">
+              <span>📞 هاتف الديليفري المعتمد</span>
+              <span dir="ltr" style="font-weight: 700;">+963 995 382 496</span>
+            </div>
+            <div style="background: var(--white); padding: 14px; border-radius: 16px; border: 1px solid var(--border); display: flex; justify-content: space-between;">
+              <span>🕒 أوقات الدوام والتوصيل</span>
+              <span style="color: var(--muted); font-size: 0.8rem;">12:00 م - 02:00 ص</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- شريط التنقل السفلي الثابت كالتطبيقات الرسمية -->
+    <nav class="app-bottom-bar">
+      <div class="nav-tab active" id="tabHome" onclick="switchPage('home', this)">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">الرئيسية</span>
+      </div>
+      <div class="nav-tab" id="tabOffers" onclick="switchPage('offers', this)">
+        <span class="nav-icon">🏷️</span>
+        <span class="nav-label">العروض</span>
+      </div>
+      <div class="nav-tab" id="tabCart" onclick="switchPage('cart', this)">
+        <span class="nav-icon">🛍️</span>
+        <span class="nav-label">السلة</span>
+        <span class="badge-cart" id="cartBadgeCount" style="display: none;">0</span>
+      </div>
+      <div class="nav-tab" id="tabProfile" onclick="switchPage('profile', this)">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">حسابي</span>
+      </div>
+    </nav>
+
+  </div>
+
+  <script>
+    // بيانات المنتجات بالليرة السورية
+    const products = [
+      {
+        id: 1,
+        name: "برغر لحم دبل تشيز بريميوم",
+        category: "burgers",
+        desc: "لحم بقري طازج، شيدر سائلة، صوص كوكتيل وخس مقرمش",
+        price: 45000,
+        img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=300&q=80"
+      },
+      {
+        id: 2,
+        name: "وجبة شاورما عربي دبل مقطعة",
+        category: "shawarma",
+        desc: "شاورما دجاج، بطاطا مقلية، صوص ثومية ومخلل لفت",
+        price: 38000,
+        img: "https://images.unsplash.com/photo-1529042410759-befb1204b468?auto=format&fit=crop&w=300&q=80"
+      },
+      {
+        id: 3,
+        name: "بيتزا مارغريتا إيطالية أصلية",
+        category: "pizza",
+        desc: "موزاريلا طبيعية، صلصة طماطم بالريحان، وزيت زيتون بكر",
+        price: 48000,
+        img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=300&q=80"
+      },
+      {
+        id: 4,
+        name: "وجبة بروستد دجاج كرسبي 4 قطع",
+        category: "chicken",
+        desc: "دجاج مقرمش بخلطة الأعشاب، صوص حار وبطاطا ودجز",
+        price: 52000,
+        img: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=300&q=80"
+      }
+    ];
+
+    const cart = {};
+
+    // عرض المنتجات في الشاشة الرئيسية
+    function renderProducts(items) {
+      const grid = document.getElementById('foodGrid');
+      grid.innerHTML = items.map(p => `
+        <div class="food-card-modern">
+          <img src="${p.img}" class="food-thumb" alt="${p.name}">
+          <div class="food-details">
+            <div class="food-name">${p.name}</div>
+            <div class="food-sub">${p.desc}</div>
+            <div class="food-price">${p.price.toLocaleString('ar-SY')} ل.س</div>
+          </div>
+          <button class="add-to-cart-btn" onclick="addToCart(${p.id})">+</button>
+        </div>
+      `).join('');
+    }
+
+    renderProducts(products);
+
+    // تصفية الأقسام
+    function filterCategory(cat, el) {
+      if (el) {
+        document.querySelectorAll('.category-item').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+      }
+      if (cat === 'all') {
+        renderProducts(products);
+      } else {
+        renderProducts(products.filter(p => p.category === cat));
+      }
+    }
+
+    // التنقل بين شاشات التطبيق الأربعة
+    function switchPage(pageKey, tabEl) {
+      document.querySelectorAll('.app-page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+      if (pageKey === 'home') document.getElementById('pageHome').classList.add('active');
+      if (pageKey === 'offers') document.getElementById('pageOffers').classList.add('active');
+      if (pageKey === 'cart') {
+        document.getElementById('pageCart').classList.add('active');
+        renderCart();
+      }
+      if (pageKey === 'profile') document.getElementById('pageProfile').classList.add('active');
+
+      if (tabEl) tabEl.classList.add('active');
+    }
+
+    // إدارة السلة الذكية
+    function addToCart(productId) {
+      const prod = products.find(p => p.id === productId);
+      if (!cart[productId]) {
+        cart[productId] = { ...prod, qty: 1 };
+      } else {
+        cart[productId].qty++;
+      }
+      updateCartBadge();
+    }
+
+    function modifyQty(productId, delta) {
+      if (cart[productId]) {
+        cart[productId].qty += delta;
+        if (cart[productId].qty <= 0) delete cart[productId];
+      }
+      updateCartBadge();
+      renderCart();
+    }
+
+    function updateCartBadge() {
+      let count = 0;
+      for (let k in cart) count += cart[k].qty;
+      const badge = document.getElementById('cartBadgeCount');
+      if (count > 0) {
+        badge.innerText = count;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItemsContainer');
+      const checkoutBox = document.getElementById('checkoutSection');
+      const totalDisplay = document.getElementById('cartTotalPrice');
+      
+      const itemKeys = Object.keys(cart);
+      if (itemKeys.length === 0) {
+        container.innerHTML = `
+          <div class="cart-empty-state">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🛍️</div>
+            <h3>سلتك فارغة حالياً</h3>
+            <p style="font-size: 0.8rem; margin-top: 4px;">تصفح الوجبات الشهية وأضف ما يعجبك بلمسة واحدة</p>
+          </div>
+        `;
+        checkoutBox.style.display = 'none';
+        return;
+      }
+
+      let total = 0;
+      container.innerHTML = itemKeys.map(k => {
+        const item = cart[k];
+        const sub = item.qty * item.price;
+        total += sub;
+        return `
+          <div class="cart-item-row">
+            <div>
+              <div style="font-weight: 800; font-size: 0.9rem;">${item.name}</div>
+              <div style="font-size: 0.8rem; color: var(--primary-green); font-weight: 700;">${item.price.toLocaleString('ar-SY')} ل.س</div>
+            </div>
+            <div class="qty-counter">
+              <button class="counter-btn" onclick="modifyQty(${item.id}, -1)">-</button>
+              <span style="font-weight: 800; font-size: 0.95rem;">${item.qty}</span>
+              <button class="counter-btn" onclick="modifyQty(${item.id}, 1)">+</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      totalDisplay.innerText = total.toLocaleString('ar-SY') + " ل.س";
+      checkoutBox.style.display = 'block';
+    }
+
+    // إرسال الطلب المنسق إلى الواتساب المعتمد
+    function checkoutToWhatsApp() {
+      const name = document.getElementById('custNameInput').value.trim();
+      const addr = document.getElementById('custAddressInput').value.trim();
+      const note = document.getElementById('custNoteInput').value.trim();
+
+      if (!name || !addr) {
+        alert("يرجى إدخال الاسم وعنوان التوصيل لإتمام الطلب.");
+        return;
+      }
+
+      let orderText = "";
+      let total = 0;
+      for (let k in cart) {
+        const it = cart[k];
+        const sub = it.qty * it.price;
+        total += sub;
+        orderText += `▪️ ${it.qty}x ${it.name} (${sub.toLocaleString('ar-SY')} ل.س)\n`;
+      }
+
+      const orderCode = 'GB-' + Math.floor(1000 + Math.random() * 9000);
+
+      const msg = `السلام عليكم ورحمة الله 🍔\n` +
+                  `*طلب وجبات جديد من تطبيق GreenBite:*\n\n` +
+                  `🔖 *رقم الطلب:* ${orderCode}\n` +
+                  `👤 *العميل:* ${name}\n` +
+                  `📍 *العنوان:* ${addr}\n` +
+                  (note ? `📝 *ملاحظة:* ${note}\n` : '') +
+                  `\n*قائمة الوجبات:*\n${orderText}\n` +
+                  `💰 *الإجمالي المطلوب:* ${total.toLocaleString('ar-SY')} ل.س\n\n` +
+                  `يرجى تأكيد الاستلام ووقت خروج الديليفري.`;
+
+      const targetPhone = "963995382496";
+      window.open(`https://wa.me/${targetPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+  </script>
+</body>
+</html>
